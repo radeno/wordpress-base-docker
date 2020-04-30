@@ -2,8 +2,8 @@ FROM wordpress:cli-2.4-php7.3 AS wpcli
 
 FROM php:7.3-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 5.3.2
-ENV WORDPRESS_SHA1 fded476f112dbab14e3b5acddd2bcfa550e7b01b
+ENV WORDPRESS_VERSION 5.3.3
+ENV WORDPRESS_SHA1 9f347c8c19c0b633f07577b39ea312ab88882643
 
 # Install PHP extensions
 RUN set -ex; \
