@@ -52,8 +52,7 @@ RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R akismet && rm hello.php \
     && cd /usr/src/wordpress/wp-content/themes \
     && rm -R twentynineteen \
     && rm -R twentyseventeen \
-    && rm -R twentysixteen
-# && rm -R twentytwenty
+    && rm -R twentytwenty
 
 # --------------
 
