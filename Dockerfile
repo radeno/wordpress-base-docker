@@ -2,8 +2,8 @@ FROM wordpress:cli-2.4-php7.3 AS wpcli
 
 FROM php:7.3-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 5.3.3
-ENV WORDPRESS_SHA1 9f347c8c19c0b633f07577b39ea312ab88882643
+ENV WORDPRESS_VERSION 5.3.4
+ENV WORDPRESS_SHA1 17a265610e1d66e6610b47e60510c1ed0548e7ca
 
 # Install PHP extensions
 RUN set -ex; \
@@ -23,6 +23,7 @@ RUN set -ex; \
     libwebp-dev \
     libzip-dev \
     make \
+    vips-dev \
     ; \
     \
     docker-php-ext-configure gd --with-freetype-dir=/usr --with-jpeg-dir=/usr --with-png-dir=/usr; \
@@ -35,8 +36,8 @@ RUN set -ex; \
     zip \
     ; \
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize &&  ./configure --with-libbrotli && make && make install; \
-    pecl install imagick redis; \
-    docker-php-ext-enable brotli imagick redis
+    pecl install imagick redis vips; \
+    docker-php-ext-enable brotli imagick redis vips
 
 # Copy Wordpress
 RUN set -ex; \
@@ -67,6 +68,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     imagemagick \
     imagemagick-libs \
     sed \
+    vips \
     ; \
     runDeps="$( \
     scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
