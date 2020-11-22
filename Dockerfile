@@ -1,3 +1,4 @@
+FROM composer:1.9 AS composer
 FROM wordpress:cli-2.4-php7.3 AS wpcli
 
 FROM php:7.3-fpm-alpine AS packages
@@ -80,6 +81,9 @@ RUN apk add  --no-cache --virtual .run-deps \
 COPY --from=packages /usr/local/etc/php /usr/local/etc/php
 COPY --from=packages /usr/local/include/php/ /usr/local/include/php
 COPY --from=packages /usr/local/lib/php /usr/local/lib/php
+
+# Composer
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin/wp
