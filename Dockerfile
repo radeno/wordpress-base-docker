@@ -27,7 +27,7 @@ RUN set -ex; \
     vips-dev \
     ; \
     \
-    docker-php-ext-configure gd --with-freetype --with-jpeg --with-png; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j "$(nproc)" \
     bcmath \
     exif \
