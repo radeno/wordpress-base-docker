@@ -48,11 +48,9 @@ RUN set -ex; \
     rm wordpress.tar.gz;
 
 # Remove defaults from WP
-RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R akismet && rm hello.php \
+RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
     && cd /usr/src/wordpress/wp-content/themes \
-    && rm -R twentynineteen \
-    && rm -R twentyseventeen \
-    && rm -R twentytwenty
+    && rm -R -- */
 
 # --------------
 
