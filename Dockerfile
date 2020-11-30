@@ -1,7 +1,7 @@
 FROM composer:1.9 AS composer
-FROM wordpress:cli-2.4-php7.3 AS wpcli
+FROM wordpress:cli-2.4-php7.4 AS wpcli
 
-FROM php:7.3-fpm-alpine AS packages
+FROM php:7.4-fpm-alpine AS packages
 
 ENV WORDPRESS_VERSION 5.4.4
 ENV WORDPRESS_SHA1 e08eec823b47314cedc5d1b642d6b62886f49b49
@@ -27,7 +27,7 @@ RUN set -ex; \
     vips-dev \
     ; \
     \
-    docker-php-ext-configure gd --with-freetype-dir=/usr --with-jpeg-dir=/usr --with-png-dir=/usr; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-png; \
     docker-php-ext-install -j "$(nproc)" \
     bcmath \
     exif \
@@ -56,7 +56,7 @@ RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R akismet && rm hello.php \
 
 # --------------
 
-FROM php:7.3-fpm-alpine
+FROM php:7.4-fpm-alpine
 
 RUN apk add  --no-cache --virtual .run-deps \
     bash \
@@ -70,11 +70,11 @@ RUN apk add  --no-cache --virtual .run-deps \
     vips \
     ; \
     runDeps="$( \
-    scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-    | tr ',' '\n' \
-    | sort -u \
-    | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-    )"; \
+		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+			| tr ',' '\n' \
+			| sort -u \
+			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+	)"; \
     apk add --virtual .wordpress-phpexts-rundeps $runDeps;
 
 # PHP extensions
