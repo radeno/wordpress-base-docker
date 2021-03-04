@@ -1,9 +1,10 @@
-FROM wordpress:cli-2.4-php7.3 AS wpcli
+FROM composer:1.9 AS composer
+FROM wordpress:cli-2.4-php7.4 AS wpcli
 
-FROM php:7.3-fpm-alpine AS packages
+FROM php:7.4-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 5.2.5
-ENV WORDPRESS_SHA1 1afb2e9a10be336773a62a120bb4cfb44214dfcc
+ENV WORDPRESS_VERSION 5.5.3
+ENV WORDPRESS_SHA1 61015720c679a6cbf9ad51701f0f3fedb51b3273
 
 # Install PHP extensions
 RUN set -ex; \
@@ -23,20 +24,20 @@ RUN set -ex; \
     libwebp-dev \
     libzip-dev \
     make \
+    vips-dev \
     ; \
     \
-    docker-php-ext-configure gd --with-freetype-dir=/usr --with-jpeg-dir=/usr --with-png-dir=/usr; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j "$(nproc)" \
     bcmath \
     exif \
     gd \
     mysqli \
-    opcache \
     zip \
     ; \
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize &&  ./configure --with-libbrotli && make && make install; \
-    pecl install imagick redis; \
-    docker-php-ext-enable brotli imagick redis
+    pecl install imagick redis vips; \
+    docker-php-ext-enable brotli imagick opcache redis vips
 
 # Copy Wordpress
 RUN set -ex; \
@@ -47,16 +48,13 @@ RUN set -ex; \
     rm wordpress.tar.gz;
 
 # Remove defaults from WP
-RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R akismet && rm hello.php \
+RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
     && cd /usr/src/wordpress/wp-content/themes \
-    && rm -R twentynineteen \
-    && rm -R twentyseventeen \
-    && rm -R twentysixteen
-# && rm -R twentytwenty
+    && rm -R -- */
 
 # --------------
 
-FROM php:7.3-fpm-alpine
+FROM php:7.4-fpm-alpine
 
 RUN apk add  --no-cache --virtual .run-deps \
     bash \
@@ -67,19 +65,23 @@ RUN apk add  --no-cache --virtual .run-deps \
     imagemagick \
     imagemagick-libs \
     sed \
+    vips \
     ; \
     runDeps="$( \
-    scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-    | tr ',' '\n' \
-    | sort -u \
-    | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-    )"; \
+		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+			| tr ',' '\n' \
+			| sort -u \
+			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+	)"; \
     apk add --virtual .wordpress-phpexts-rundeps $runDeps;
 
 # PHP extensions
 COPY --from=packages /usr/local/etc/php /usr/local/etc/php
 COPY --from=packages /usr/local/include/php/ /usr/local/include/php
 COPY --from=packages /usr/local/lib/php /usr/local/lib/php
+
+# Composer
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin/wp
