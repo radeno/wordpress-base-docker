@@ -1,10 +1,10 @@
 FROM composer:1.9 AS composer
-FROM wordpress:cli-2.4-php7.4 AS wpcli
+FROM wordpress:cli-2.5-php7.4 AS wpcli
 
 FROM php:7.4-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 5.6.5
-ENV WORDPRESS_SHA1 14522084209c28ba3bb22b2b4220b13f4e04f289
+ENV WORDPRESS_VERSION 5.7.3
+ENV WORDPRESS_SHA1 f60282cd136ee34de40bfff0a28f3bda7664e2f5
 
 # Install PHP extensions
 RUN set -ex; \
@@ -67,7 +67,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     sed \
     vips \
     ; \
-    runDeps="$( \
+	runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
 			| tr ',' '\n' \
 			| sort -u \
