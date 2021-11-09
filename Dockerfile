@@ -27,7 +27,7 @@ RUN set -ex; \
     vips-dev \
     ; \
     \
-    docker-php-ext-configure gd --with-freetype --with-jpeg; \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
     docker-php-ext-install -j "$(nproc)" \
     bcmath \
     exif \
@@ -36,7 +36,7 @@ RUN set -ex; \
     zip \
     ; \
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize &&  ./configure --with-libbrotli && make && make install; \
-    pecl install imagick redis vips; \
+    pecl install imagick-3.5.0 redis vips; \
     docker-php-ext-enable brotli imagick opcache redis vips
 
 # Copy Wordpress
@@ -67,7 +67,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     sed \
     vips \
     ; \
-	runDeps="$( \
+    runDeps="$( \
 		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
 			| tr ',' '\n' \
 			| sort -u \
