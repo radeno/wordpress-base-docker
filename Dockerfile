@@ -1,43 +1,53 @@
 FROM composer:1.9 AS composer
 FROM wordpress:cli-2.5-php7.4 AS wpcli
 
-FROM php:7.4-fpm-alpine AS packages
+FROM php:7.4-fpm-alpine
+# FROM php:7.4-fpm-alpine AS packages
 
 ENV WORDPRESS_VERSION 5.7.4
 ENV WORDPRESS_SHA1 90b0bb4b6b4be18f80deadf8d8da18afbf6e81d8
 
-# Install PHP extensions
+# install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
     \
     apk add --no-cache --virtual .build-deps \
-    $PHPIZE_DEPS \
-    autoconf \
-    brotli-dev \
-    freetype-dev \
-    gcc \
-    ghostscript-dev \
-    git \
-    imagemagick-dev \
-    libc-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    libwebp-dev \
-    libzip-dev \
-    make \
-    vips-dev \
+        $PHPIZE_DEPS \
+        autoconf \
+        brotli-dev \
+        freetype-dev \
+        gcc \
+        ghostscript-dev \
+        git \
+        imagemagick-dev \
+        libc-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        libzip-dev \
+        make \
+        vips-dev \
     ; \
     \
-    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp; \
+    docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
+    ; \
     docker-php-ext-install -j "$(nproc)" \
-    bcmath \
-    exif \
-    gd \
-    mysqli \
-    zip \
+        bcmath \
+        exif \
+        gd \
+        mysqli \
+        zip \
     ; \
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize &&  ./configure --with-libbrotli && make && make install; \
+# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
+# https://pecl.php.net/package/imagick
     pecl install imagick-3.5.0 redis vips; \
-    docker-php-ext-enable brotli imagick opcache redis vips
+    docker-php-ext-enable brotli imagick opcache redis vips; \
+    rm -r /tmp/pear; \
+    \
+    apk del --no-network .build-deps
 
 # Copy Wordpress
 RUN set -ex; \
@@ -54,7 +64,7 @@ RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
 
 # --------------
 
-FROM php:7.4-fpm-alpine
+# FROM php:7.4-fpm-alpine
 
 RUN apk add  --no-cache --virtual .run-deps \
     bash \
@@ -68,24 +78,24 @@ RUN apk add  --no-cache --virtual .run-deps \
     vips \
     ; \
     runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-			| tr ',' '\n' \
-			| sort -u \
-			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-	)"; \
+        scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
+            | tr ',' '\n' \
+            | sort -u \
+            | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+    )"; \
     apk add --virtual .wordpress-phpexts-rundeps $runDeps;
 
 # PHP extensions
-COPY --from=packages /usr/local/etc/php /usr/local/etc/php
-COPY --from=packages /usr/local/include/php/ /usr/local/include/php
-COPY --from=packages /usr/local/lib/php /usr/local/lib/php
+# COPY --from=packages /usr/local/etc/php /usr/local/etc/php
+# COPY --from=packages /usr/local/include/php/ /usr/local/include/php
+# COPY --from=packages /usr/local/lib/php /usr/local/lib/php
 
 # Composer
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin/wp
-COPY --from=packages /usr/src/wordpress /usr/src/wordpress
+# COPY --from=packages /usr/src/wordpress /usr/src/wordpress
 
 EXPOSE 9000
 CMD ["php-fpm"]
