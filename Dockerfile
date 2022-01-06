@@ -4,8 +4,8 @@ FROM wordpress:cli-2.5-php7.4 AS wpcli
 FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 5.7.4
-ENV WORDPRESS_SHA1 90b0bb4b6b4be18f80deadf8d8da18afbf6e81d8
+ENV WORDPRESS_VERSION 5.7.5
+ENV WORDPRESS_SHA1 08b2a513f0e17965c84a91cbdb0daffbfaf49b47
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
@@ -43,11 +43,11 @@ RUN set -ex; \
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize &&  ./configure --with-libbrotli && make && make install; \
 # WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
 # https://pecl.php.net/package/imagick
-    pecl install imagick-3.5.0 redis vips; \
+    pecl install imagick-3.6.0 redis vips; \
     docker-php-ext-enable brotli imagick opcache redis vips; \
     rm -r /tmp/pear; \
     \
-    apk del --no-network .build-deps
+	apk del --no-network .build-deps
 
 # Copy Wordpress
 RUN set -ex; \
@@ -71,19 +71,36 @@ RUN apk add  --no-cache --virtual .run-deps \
     brotli \
     ghostscript \
     less \
+    libgomp \
+    libjpeg-turbo \
+    libpng \
+    libwebp \
     libzip \
     imagemagick \
     imagemagick-libs \
     sed \
     vips \
     ; \
-    runDeps="$( \
-        scanelf --needed --nobanner --format '%n#p' --recursive /usr/local/lib/php/extensions \
-            | tr ',' '\n' \
-            | sort -u \
-            | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-    )"; \
-    apk add --virtual .wordpress-phpexts-rundeps $runDeps;
+# some misbehaving extensions end up outputting to stdout 🙈 (https://github.com/docker-library/wordpress/issues/669#issuecomment-993945967)
+	out="$(php -r 'exit(0);')"; \
+	[ -z "$out" ]; \
+	err="$(php -r 'exit(0);' 3>&1 1>&2 2>&3)"; \
+	[ -z "$err" ]; \
+	\
+	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
+	[ -d "$extDir" ]; \
+	runDeps="$( \
+		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
+			| tr ',' '\n' \
+			| sort -u \
+			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+	)"; \
+	apk add --no-network --virtual .wordpress-phpexts-rundeps $runDeps; \
+	\
+	! { ldd "$extDir"/*.so | grep 'not found'; }; \
+# check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
+	err="$(php --version 3>&1 1>&2 2>&3)"; \
+	[ -z "$err" ]
 
 # PHP extensions
 # COPY --from=packages /usr/local/etc/php /usr/local/etc/php
