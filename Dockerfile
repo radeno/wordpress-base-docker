@@ -5,7 +5,7 @@ FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
 
 ENV WORDPRESS_VERSION 5.8.3
-ENV WORDPRESS_SHA1 3be7ed4dc6f46fe98271b974c88153640e95ad49
+ENV WORDPRESS_SHA1 b45b18cd7870b6d05debf4788913294620b0cd90
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
@@ -18,6 +18,7 @@ RUN set -ex; \
         gcc \
         ghostscript-dev \
         git \
+        icu-dev \
         imagemagick-dev \
         libc-dev \
         libjpeg-turbo-dev \
@@ -37,6 +38,7 @@ RUN set -ex; \
         bcmath \
         exif \
         gd \
+        intl \
         mysqli \
         zip \
     ; \
@@ -76,6 +78,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     libpng \
     libwebp \
     libzip \
+    icu \
     imagemagick \
     imagemagick-libs \
     sed \
