@@ -1,5 +1,5 @@
-FROM composer:1.9 AS composer
-FROM wordpress:cli-2.5-php7.4 AS wpcli
+FROM composer:2.3 AS composer
+FROM wordpress:cli-2.6-php7.4 AS wpcli
 
 FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
@@ -57,10 +57,9 @@ RUN set -ex; \
     echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c -; \
     # upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
     tar -xzf wordpress.tar.gz -C /usr/src/; \
-    rm wordpress.tar.gz;
-
-# Remove defaults from WP
-RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
+    rm wordpress.tar.gz; \
+    # Remove defaults from WP
+    cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
     && cd /usr/src/wordpress/wp-content/themes \
     && rm -R -- */
 
@@ -72,13 +71,13 @@ RUN apk add  --no-cache --virtual .run-deps \
     bash \
     brotli \
     ghostscript \
+    icu \
     less \
     libgomp \
     libjpeg-turbo \
     libpng \
     libwebp \
     libzip \
-    icu \
     imagemagick \
     imagemagick-libs \
     sed \
