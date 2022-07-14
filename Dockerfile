@@ -1,11 +1,11 @@
-FROM composer:1.9 AS composer
-FROM wordpress:cli-2.5-php7.4 AS wpcli
+FROM composer:2.3 AS composer
+FROM wordpress:cli-2.6-php7.4 AS wpcli
 
 FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 5.7.5
-ENV WORDPRESS_SHA1 08b2a513f0e17965c84a91cbdb0daffbfaf49b47
+ENV WORDPRESS_VERSION 5.8.4
+ENV WORDPRESS_SHA1 b45b18cd7870b6d05debf4788913294620b0cd90
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
@@ -18,6 +18,7 @@ RUN set -ex; \
         gcc \
         ghostscript-dev \
         git \
+        icu-dev \
         imagemagick-dev \
         libc-dev \
         libjpeg-turbo-dev \
@@ -37,6 +38,7 @@ RUN set -ex; \
         bcmath \
         exif \
         gd \
+        intl \
         mysqli \
         zip \
     ; \
@@ -55,10 +57,9 @@ RUN set -ex; \
     echo "$WORDPRESS_SHA1 *wordpress.tar.gz" | sha1sum -c -; \
     # upstream tarballs include ./wordpress/ so this gives us /usr/src/wordpress
     tar -xzf wordpress.tar.gz -C /usr/src/; \
-    rm wordpress.tar.gz;
-
-# Remove defaults from WP
-RUN cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
+    rm wordpress.tar.gz; \
+    # Remove defaults from WP
+    cd /usr/src/wordpress/wp-content/plugins/ && rm -R -- */ && rm hello.php \
     && cd /usr/src/wordpress/wp-content/themes \
     && rm -R -- */
 
@@ -70,6 +71,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     bash \
     brotli \
     ghostscript \
+    icu \
     less \
     libgomp \
     libjpeg-turbo \
