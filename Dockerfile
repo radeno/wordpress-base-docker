@@ -1,4 +1,4 @@
-FROM composer:2.4 AS composer
+FROM composer:2.5 AS composer
 FROM wordpress:cli-2.7-php7.4 AS wpcli
 
 FROM php:7.4-fpm-alpine
