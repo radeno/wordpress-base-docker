@@ -4,8 +4,8 @@ FROM wordpress:cli-2.7-php7.4 AS wpcli
 FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 6.1.1
-ENV WORDPRESS_SHA1 80f0f829645dec07c68bcfe0a0a1e1d563992fcb
+ENV WORDPRESS_VERSION 6.1.2
+ENV WORDPRESS_SHA1 4fbd47a9ef4383baae98fdc3ee98cc28097d8abb
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
