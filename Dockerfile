@@ -1,5 +1,5 @@
 FROM composer:2.5 AS composer
-FROM wordpress:cli-2.8-php7.4 AS wpcli
+FROM wordpress:cli-2.8-php8.0 AS wpcli
 
 FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
