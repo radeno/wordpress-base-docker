@@ -1,11 +1,11 @@
-FROM composer:2.4 AS composer
+FROM composer:2.5 AS composer
 FROM wordpress:cli-2.7-php7.4 AS wpcli
 
 FROM php:7.4-fpm-alpine
 # FROM php:7.4-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 6.0.3
-ENV WORDPRESS_SHA1 9ab0d521aac7042cf09946f17ec86dc65b182201
+ENV WORDPRESS_VERSION 6.1.3
+ENV WORDPRESS_SHA1 b16145abb118b89477dc2a5f8a5d8c9d6ff94be8
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
