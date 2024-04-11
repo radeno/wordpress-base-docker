@@ -2,7 +2,7 @@ FROM composer:2.7 AS composer
 FROM wordpress:cli-2.10-php8.1 AS wpcli
 
 FROM php:8.1-fpm-alpine
-# FROM php:8.0-fpm-alpine AS packages
+# FROM php:8.1-fpm-alpine AS packages
 
 ENV WORDPRESS_VERSION 6.4.4
 ENV WORDPRESS_SHA1 4d7f3b36dc877570551bcbe2af3a6ea50dfaccd6
@@ -42,10 +42,10 @@ RUN set -ex; \
         mysqli \
         zip \
     ; \
-    git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize &&  ./configure --with-libbrotli && make && make install; \
+    git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize && ./configure --with-libbrotli && make && make install; \
 # WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
 # https://pecl.php.net/package/imagick
-    pecl install imagick-3.6.0 redis vips; \
+    pecl install imagick-3.7.0 redis vips; \
     docker-php-ext-enable brotli imagick opcache redis vips; \
     rm -r /tmp/pear; \
     \
@@ -65,7 +65,7 @@ RUN set -ex; \
 
 # --------------
 
-# FROM php:7.4-fpm-alpine
+# FROM php:8.1-fpm-alpine
 
 RUN apk add  --no-cache --virtual .run-deps \
     bash \
