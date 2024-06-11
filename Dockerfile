@@ -1,11 +1,11 @@
 FROM composer:2.7 AS composer
-FROM wordpress:cli-2.10-php8.1 AS wpcli
+FROM wordpress:cli-2.10-php8.2 AS wpcli
 
-FROM php:8.1-fpm-alpine
+FROM php:8.2-fpm-alpine
 # FROM php:8.1-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 6.4.4
-ENV WORDPRESS_SHA1 4d7f3b36dc877570551bcbe2af3a6ea50dfaccd6
+ENV WORDPRESS_VERSION 6.5.4
+ENV WORDPRESS_SHA1 8c635f812ac7b6da985cc62885c101897229613f
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
@@ -84,25 +84,26 @@ RUN apk add  --no-cache --virtual .run-deps \
     vips \
     ; \
 # some misbehaving extensions end up outputting to stdout 🙈 (https://github.com/docker-library/wordpress/issues/669#issuecomment-993945967)
-	out="$(php -r 'exit(0);')"; \
-	[ -z "$out" ]; \
-	err="$(php -r 'exit(0);' 3>&1 1>&2 2>&3)"; \
-	[ -z "$err" ]; \
-	\
-	extDir="$(php -r 'echo ini_get("extension_dir");')"; \
-	[ -d "$extDir" ]; \
-	runDeps="$( \
-		scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
-			| tr ',' '\n' \
-			| sort -u \
-			| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-	)"; \
-	apk add --no-network --virtual .wordpress-phpexts-rundeps $runDeps; \
-	\
-	! { ldd "$extDir"/*.so | grep 'not found'; }; \
+    out="$(php -r 'exit(0);')"; \
+    [ -z "$out" ]; \
+    err="$(php -r 'exit(0);' 3>&1 1>&2 2>&3)"; \
+    [ -z "$err" ]; \
+    \
+    extDir="$(php -r 'echo ini_get("extension_dir");')"; \
+    [ -d "$extDir" ]; \
+    runDeps="$( \
+        scanelf --needed --nobanner --format '%n#p' --recursive "$extDir" \
+            | tr ',' '\n' \
+            | sort -u \
+            | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+    )"; \
+    apk add --no-network --virtual .wordpress-phpexts-rundeps $runDeps; \
+    apk del --no-network .build-deps; \
+    \
+    ! { ldd "$extDir"/*.so | grep 'not found'; }; \
 # check for output like "PHP Warning:  PHP Startup: Unable to load dynamic library 'foo' (tried: ...)
-	err="$(php --version 3>&1 1>&2 2>&3)"; \
-	[ -z "$err" ]
+    err="$(php --version 3>&1 1>&2 2>&3)"; \
+    [ -z "$err" ]
 
 # PHP extensions
 # COPY --from=packages /usr/local/etc/php /usr/local/etc/php
