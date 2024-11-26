@@ -111,10 +111,10 @@ RUN apk add  --no-cache --virtual .run-deps \
 # COPY --from=packages /usr/local/lib/php /usr/local/lib/php
 
 # Composer
-COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer /usr/bin/composer /usr/local/bin
 
 # Wordpress
-COPY --from=wpcli /usr/local/bin/wp /usr/local/bin/wp
+COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
 # COPY --from=packages /usr/src/wordpress /usr/src/wordpress
 
 EXPOSE 9000
