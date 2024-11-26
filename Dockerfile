@@ -1,4 +1,5 @@
-FROM composer:2.8 AS composer
+# composer 2.8 has an issue
+FROM composer:2.7 AS composer
 FROM wordpress:cli-2.11-php8.2 AS wpcli
 
 FROM php:8.2-fpm-alpine
