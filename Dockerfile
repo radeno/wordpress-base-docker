@@ -5,8 +5,8 @@ FROM wordpress:cli-2.11-php8.2 AS wpcli
 FROM php:8.2-fpm-alpine
 # FROM php:8.1-fpm-alpine AS packages
 
-ENV WORDPRESS_VERSION 6.5.5
-ENV WORDPRESS_SHA1 8d6a705f1b59367ec584a5fd4ab84aa53dd01c85
+ENV WORDPRESS_VERSION 6.6.2
+ENV WORDPRESS_SHA1 7acbf69d5fdaf804e3db322bad23b08d2e2e42ec
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
@@ -20,7 +20,8 @@ RUN set -ex; \
         ghostscript-dev \
         git \
         icu-dev \
-        imagemagick-dev \
+        imagemagick-dev libheif-dev \
+        libavif-dev \
         libc-dev \
         libjpeg-turbo-dev \
         libpng-dev \
@@ -31,6 +32,7 @@ RUN set -ex; \
     ; \
     \
     docker-php-ext-configure gd \
+        --with-avif \
         --with-freetype \
         --with-jpeg \
         --with-webp \
@@ -81,6 +83,8 @@ RUN apk add  --no-cache --virtual .run-deps \
     libzip \
     imagemagick \
     imagemagick-libs \
+    libheif \
+    libavif \
     sed \
     vips \
     ; \
