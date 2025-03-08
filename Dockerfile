@@ -1,9 +1,7 @@
-# composer 2.8 has an issue
-FROM composer:2.7 AS composer
-FROM wordpress:cli-2.11-php8.2 AS wpcli
+FROM composer:2.8 AS composer
+FROM wordpress:cli-2.11-php8.3 AS wpcli
 
-FROM php:8.2-fpm-alpine
-# FROM php:8.1-fpm-alpine AS packages
+FROM php:8.3-fpm-alpine
 
 ENV WORDPRESS_VERSION 6.6.2
 ENV WORDPRESS_SHA1 7acbf69d5fdaf804e3db322bad23b08d2e2e42ec
@@ -46,9 +44,21 @@ RUN set -ex; \
         zip \
     ; \
     git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize && ./configure --with-libbrotli && make && make install; \
-# WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
-# https://pecl.php.net/package/imagick
-    pecl install imagick-3.7.0 redis vips; \
+    # WARNING: imagick is likely not supported on Alpine: https://github.com/Imagick/imagick/issues/328
+    # https://pecl.php.net/package/imagick
+    # https://github.com/Imagick/imagick/commit/5ae2ecf20a1157073bad0170106ad0cf74e01cb6 (causes a lot of build failures, but strangely only intermittent ones 🤔)
+    # see also https://github.com/Imagick/imagick/pull/641
+    # this is "pecl install imagick-3.7.0", but by hand so we can apply a small hack / part of the above commit
+    curl -fL -o imagick.tgz 'https://pecl.php.net/get/imagick-3.7.0.tgz'; \
+    echo '5a364354109029d224bcbb2e82e15b248be9b641227f45e63425c06531792d3e *imagick.tgz' | sha256sum -c -; \
+    tar --extract --directory /tmp --file imagick.tgz imagick-3.7.0; \
+    grep '^//#endif$' /tmp/imagick-3.7.0/Imagick.stub.php; \
+    test "$(grep -c '^//#endif$' /tmp/imagick-3.7.0/Imagick.stub.php)" = '1'; \
+    sed -i -e 's!^//#endif$!#endif!' /tmp/imagick-3.7.0/Imagick.stub.php; \
+    grep '^//#endif$' /tmp/imagick-3.7.0/Imagick.stub.php && exit 1 || :; \
+    docker-php-ext-install /tmp/imagick-3.7.0; \
+    rm -rf imagick.tgz /tmp/imagick-3.7.0; \
+    pecl install redis vips; \
     docker-php-ext-enable brotli imagick opcache redis vips; \
     rm -r /tmp/pear; \
     \
@@ -67,8 +77,6 @@ RUN set -ex; \
     && rm -R -- */
 
 # --------------
-
-# FROM php:8.2-fpm-alpine
 
 RUN apk add  --no-cache --virtual .run-deps \
     bash \
@@ -110,17 +118,11 @@ RUN apk add  --no-cache --virtual .run-deps \
     err="$(php --version 3>&1 1>&2 2>&3)"; \
     [ -z "$err" ]
 
-# PHP extensions
-# COPY --from=packages /usr/local/etc/php /usr/local/etc/php
-# COPY --from=packages /usr/local/include/php/ /usr/local/include/php
-# COPY --from=packages /usr/local/lib/php /usr/local/lib/php
-
 # Composer
 COPY --from=composer /usr/bin/composer /usr/local/bin
 
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
-# COPY --from=packages /usr/src/wordpress /usr/src/wordpress
 
 EXPOSE 9000
 CMD ["php-fpm"]
