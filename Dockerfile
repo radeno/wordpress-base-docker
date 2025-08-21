@@ -3,8 +3,8 @@ FROM wordpress:cli-2.11-php8.3 AS wpcli
 
 FROM php:8.3-fpm-alpine
 
-ENV WORDPRESS_VERSION 6.7.2
-ENV WORDPRESS_SHA1 ff727df89b694749e91e357dc2329fac620b3906
+ENV WORDPRESS_VERSION 6.7.3
+ENV WORDPRESS_SHA1 092a018ba6f42015e0f80a14bf3220fbb7698c24
 
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
