@@ -16,7 +16,6 @@ RUN set -ex; \
         freetype-dev \
         gcc \
         ghostscript-dev \
-        git \
         icu-dev \
         imagemagick-dev libheif-dev \
         libavif-dev \
@@ -24,6 +23,7 @@ RUN set -ex; \
         libjpeg-turbo-dev \
         libpng-dev \
         libwebp-dev \
+        lz4-dev \
         libzip-dev \
         make \
         vips-dev \
@@ -43,9 +43,11 @@ RUN set -ex; \
         mysqli \
         zip \
     ; \
-    git clone --recursive --depth=1 https://github.com/kjdev/php-ext-brotli.git && cd php-ext-brotli && phpize && ./configure --with-libbrotli && make && make install; \
-    pecl install redis vips imagick-3.8.0; \
-    docker-php-ext-enable brotli imagick opcache redis vips; \
+    pecl install brotli vips imagick-3.8.0; \
+    # Use igbinary or msgpack
+    pecl install igbinary; \
+    pecl install --configureoptions 'enable-redis-igbinary="yes" enable-redis-lz4="yes"' redis; \
+    docker-php-ext-enable brotli imagick opcache redis igbinary vips; \
     rm -r /tmp/pear; \
     \
 	apk del --no-network .build-deps
@@ -79,6 +81,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     imagemagick-libs \
     libheif \
     libavif \
+    lz4 \
     sed \
     vips \
     ; \
