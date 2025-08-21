@@ -117,6 +117,8 @@ COPY --from=composer /usr/bin/composer /usr/local/bin
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
 
 # Preload mimalloc for PHP at runtime
+RUN ln -sf /usr/lib/libmimalloc.so.2 /usr/lib/libmimalloc.so
+
 ENV LD_PRELOAD="/usr/lib/libmimalloc.so"
 
 EXPOSE 9000
