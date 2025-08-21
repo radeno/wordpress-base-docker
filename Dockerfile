@@ -6,6 +6,7 @@ FROM php:8.3-fpm-alpine
 ENV WORDPRESS_VERSION 6.7.3
 ENV WORDPRESS_SHA1 092a018ba6f42015e0f80a14bf3220fbb7698c24
 
+# ENV LDFLAGS="-lmimalloc"
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
 RUN set -ex; \
     \
@@ -27,6 +28,7 @@ RUN set -ex; \
         libzip-dev \
         make \
         vips-dev \
+        mimalloc-dev \
     ; \
     \
     docker-php-ext-configure gd \
@@ -84,6 +86,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     lz4 \
     sed \
     vips \
+    mimalloc \
     ; \
 # some misbehaving extensions end up outputting to stdout 🙈 (https://github.com/docker-library/wordpress/issues/669#issuecomment-993945967)
     out="$(php -r 'exit(0);')"; \
@@ -112,6 +115,9 @@ COPY --from=composer /usr/bin/composer /usr/local/bin
 
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
+
+# Preload mimalloc for PHP at runtime
+ENV LD_PRELOAD="/usr/lib/libmimalloc.so"
 
 EXPOSE 9000
 CMD ["php-fpm"]
