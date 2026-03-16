@@ -1,10 +1,10 @@
 FROM composer:2.8 AS composer
-FROM wordpress:cli-2.11-php8.3 AS wpcli
+FROM wordpress:cli-2.12-php8.3 AS wpcli
 
 FROM php:8.3-fpm-alpine
 
-ENV WORDPRESS_VERSION 6.7.5
-ENV WORDPRESS_SHA1 94236fdc4ce0466834911bfd5e144b7366156fd7
+ENV WORDPRESS_VERSION 6.8.5
+ENV WORDPRESS_SHA1 c2e2a7febe4f9024f0007e4e128187ccd2e37d76
 
 # ENV LDFLAGS="-lmimalloc"
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
@@ -45,7 +45,7 @@ RUN set -ex; \
         mysqli \
         zip \
     ; \
-    pecl install brotli vips imagick-3.8.0; \
+    pecl install brotli vips imagick-3.8.1; \
     # Use igbinary or msgpack
     pecl install igbinary; \
     pecl install --configureoptions 'enable-redis-igbinary="yes" enable-redis-lz4="yes"' redis; \
