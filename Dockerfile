@@ -1,7 +1,7 @@
 FROM composer:2.8 AS composer
-FROM wordpress:cli-2.12-php8.3 AS wpcli
+FROM wordpress:cli-2.12-php8.4 AS wpcli
 
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 ENV WORDPRESS_VERSION 6.8.5
 ENV WORDPRESS_SHA1 c2e2a7febe4f9024f0007e4e128187ccd2e37d76
@@ -49,7 +49,7 @@ RUN set -ex; \
     # Use igbinary or msgpack
     pecl install igbinary; \
     pecl install --configureoptions 'enable-redis-igbinary="yes" enable-redis-lz4="yes"' redis; \
-    docker-php-ext-enable brotli imagick opcache redis igbinary vips; \
+    docker-php-ext-enable brotli imagick redis igbinary vips; \
     rm -r /tmp/pear; \
     \
 	apk del --no-network .build-deps
@@ -117,7 +117,7 @@ COPY --from=composer /usr/bin/composer /usr/local/bin
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
 
 # Preload mimalloc for PHP at runtime
-RUN ln -sf /usr/lib/libmimalloc.so.2 /usr/lib/libmimalloc.so
+RUN ln -sf libmimalloc.so.2 /usr/lib/libmimalloc.so
 
 ENV LD_PRELOAD="/usr/lib/libmimalloc.so"
 
