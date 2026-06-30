@@ -3,8 +3,8 @@ FROM wordpress:cli-2.12-php8.4 AS wpcli
 
 FROM php:8.4-fpm-alpine
 
-ENV WORDPRESS_VERSION 6.8.5
-ENV WORDPRESS_SHA1 c2e2a7febe4f9024f0007e4e128187ccd2e37d76
+ENV WORDPRESS_VERSION 6.9.4
+ENV WORDPRESS_SHA1 018542f4c3e15db0d8e38aaf0fcf1b5dc56dbb79
 
 # ENV LDFLAGS="-lmimalloc"
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
@@ -116,7 +116,10 @@ COPY --from=composer /usr/bin/composer /usr/local/bin
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
 
-# Preload mimalloc for PHP at runtime
+# Make mimalloc available and preload it so php-fpm starts with it loaded.
+# Consuming projects activate it for PHP via php-fpm config:
+#   env[USE_ZEND_ALLOC] = 0   -> PHP uses system malloc (= mimalloc) instead of the Zend MM
+#   env[LD_PRELOAD]      = /usr/lib/libmimalloc.so   -> propagates mimalloc to PHP subprocesses
 RUN ln -sf libmimalloc.so.2 /usr/lib/libmimalloc.so
 
 ENV LD_PRELOAD="/usr/lib/libmimalloc.so"
