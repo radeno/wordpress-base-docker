@@ -1,10 +1,10 @@
-FROM composer:2.8 AS composer
+FROM composer:2.9 AS composer
 FROM wordpress:cli-2.12-php8.4 AS wpcli
 
 FROM php:8.4-fpm-alpine
 
-ENV WORDPRESS_VERSION 6.9.7
-ENV WORDPRESS_SHA1 7aa1f71bcc9f47925fa04d742b411b3088a36512
+ENV WORDPRESS_VERSION 7.0.4
+ENV WORDPRESS_SHA1 02de22cbd115098eafab301de6f3b6b6bb883f4a
 
 # ENV LDFLAGS="-lmimalloc"
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
@@ -112,6 +112,11 @@ RUN apk add  --no-cache --virtual .run-deps \
 
 # Composer
 COPY --from=composer /usr/bin/composer /usr/local/bin
+
+# Composer 2.9 blocks resolving to packages with known security advisories by
+# default (audit.block-insecure). Turn it off globally -- the env var overrides
+# the config option, so consuming projects cannot be broken by an upstream advisory.
+ENV COMPOSER_NO_SECURITY_BLOCKING=1
 
 # Wordpress
 COPY --from=wpcli /usr/local/bin/wp /usr/local/bin
