@@ -3,8 +3,8 @@ FROM wordpress:cli-2.12-php8.4 AS wpcli
 
 FROM php:8.4-fpm-alpine
 
-ENV WORDPRESS_VERSION 7.0.7
-ENV WORDPRESS_SHA1 66e85f1870ad4f9ecdab7fe27f6018190057e96a
+ENV WORDPRESS_VERSION 7.0.8
+ENV WORDPRESS_SHA1 c0ed517c019c9b6412c4de8d59284acb1c0cdd94
 
 # ENV LDFLAGS="-lmimalloc"
 # install the PHP extensions we need (https://make.wordpress.org/hosting/handbook/handbook/server-environment/#php-extensions)
