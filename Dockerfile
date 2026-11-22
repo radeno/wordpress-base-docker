@@ -80,6 +80,7 @@ RUN apk add  --no-cache --virtual .run-deps \
     libwebp \
     libzip \
     imagemagick \
+    imagemagick-heic \
     imagemagick-libs \
     libheif \
     libavif \
